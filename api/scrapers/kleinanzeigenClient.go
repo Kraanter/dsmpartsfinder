@@ -25,11 +25,9 @@ type KleinanzeigenClient struct {
 // NewKleinanzeigenClient creates a new Kleinanzeigen scraper client
 func NewKleinanzeigenClient(siteID int) *KleinanzeigenClient {
 	return &KleinanzeigenClient{
-		baseURL: "https://www.kleinanzeigen.de",
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
-		siteID: siteID,
+		baseURL:    "https://www.kleinanzeigen.de",
+		httpClient: siteclients.CreateHTTPClient(),
+		siteID:     siteID,
 	}
 }
 

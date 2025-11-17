@@ -45,11 +45,9 @@ type SchadeAutosClient struct {
 // NewSchadeAutosClient creates a new SchadeAutos client
 func NewSchadeAutosClient(siteID int) *SchadeAutosClient {
 	return &SchadeAutosClient{
-		baseURL: "https://www.schadeautos.nl",
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
-		siteID: siteID,
+		baseURL:    "https://www.schadeautos.nl",
+		httpClient: CreateHTTPClient(),
+		siteID:     siteID,
 	}
 }
 

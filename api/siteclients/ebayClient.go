@@ -97,10 +97,8 @@ type ebayAPIError struct {
 // NewEbayClient creates a new EbayClient
 func NewEbayClient(siteID int, appID string, clientSecret string, isSandbox bool) *EbayClient {
 	return &EbayClient{
-		baseURL: "https://svcs.ebay.com/services/search/FindingService/v1",
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
+		baseURL:      "https://svcs.ebay.com/services/search/FindingService/v1",
+		httpClient:   CreateHTTPClient(),
 		siteID:       siteID,
 		clientID:     appID,
 		clientSecret: clientSecret,
