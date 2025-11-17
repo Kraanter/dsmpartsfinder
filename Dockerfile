@@ -29,7 +29,7 @@ WORKDIR /app/api
 RUN go mod download 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
       -ldflags="-s -w -extldflags '-static'" \
-      -o /server ./cmd/server
+      -o /server .
 
 # ──────────────────────────────────────────────────────────────
 # 3️⃣ FINAL STAGE — minimal scratch image
