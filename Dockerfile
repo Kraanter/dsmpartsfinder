@@ -1,34 +1,46 @@
-# ---- Build Stage ----
-FROM ubuntu:22.04 AS builder
+# ──────────────────────────────────────────────────────────────
+# 1️⃣ FRONTEND BUILD STAGE — build Vue app with Bun
+# ──────────────────────────────────────────────────────────────
+FROM node:21-alpine3.19 AS frontend-builder
 
-# Install build dependencies (adjust as needed)
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    make \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy project files
 WORKDIR /app
-COPY . .
+COPY frontend/ ./frontend/
+WORKDIR /app/frontend
 
-# Run Makefile build
-RUN make build
+# Install deps and build
+RUN yarn
+RUN yarn run build
 
-# ---- Runtime Stage ----
-FROM ubuntu:22.04
-
-# Create non-root user (optional)
-RUN useradd -m appuser
+# ──────────────────────────────────────────────────────────────
+# 2️⃣ BACKEND BUILD STAGE — build static Go binary with embedded frontend
+# ──────────────────────────────────────────────────────────────
+FROM golang:1.24-alpine AS backend-builder
 
 WORKDIR /app
 
-# Copy the built binary from previous stage
-COPY --from=builder /app/builds/dsmpartsfinder /app/dsmpartsfinder
+# Copy backend source
+COPY api/ ./api/
 
-# Ensure binary is executable
-RUN chmod +x /app/dsmpartsfinder
+# Copy frontend build artifacts into Go embed dir
+COPY --from=frontend-builder /app/frontend/dist ./api/frontend/
 
-USER appuser
+# Build static Go binary for Linux amd64
+WORKDIR /app/api
+RUN go mod download 
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+      -ldflags="-s -w -extldflags '-static'" \
+      -o /server ./cmd/server
 
-# Change this if your binary takes args or listens on ports
-ENTRYPOINT ["./dsmpartsfinder"]
+# ──────────────────────────────────────────────────────────────
+# 3️⃣ FINAL STAGE — minimal scratch image
+# ──────────────────────────────────────────────────────────────
+FROM scratch
+
+# Copy binary
+COPY --from=backend-builder /server /server
+
+# Expose port (adjust if needed)
+EXPOSE 8080
+
+# Run server
+ENTRYPOINT ["/server"]
