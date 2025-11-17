@@ -22,7 +22,7 @@ WORKDIR /app
 COPY api/ ./api/
 
 # Copy frontend build artifacts into Go embed dir
-COPY --from=frontend-builder /app/frontend/dist ./api/frontend/
+COPY --from=frontend-builder /app/frontend/dist ./api/frontend/dist
 
 # Build static Go binary for Linux amd64
 WORKDIR /app/api
